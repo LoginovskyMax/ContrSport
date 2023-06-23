@@ -1,0 +1,2 @@
+# ContrSport
+repo for hakaton
