@@ -1,0 +1,33 @@
+.create-game {
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+    width: 90%;
+    min-height: calc(100vh - 160px);
+    &__button {
+      margin: 40px 0;
+      min-width: 200px;
+    }
+  }
+  
+  .dark-theme{
+    .create-game__main-text{
+      color: #fffef0;
+    }
+    .create-game__secondary-text{
+      color: #fffef0;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .create-game {
+      &__main-text {
+        font-size: 2.5em;
+        max-width: 96vw;
+      }
+  
+      &__secondary-text {
+        max-width: 90vw;
+      }
+    }
+  }

@@ -100,7 +100,10 @@ export const createUser = async (data: NewUserData) =>
       body: JSON.stringify(data),
     }).then((response) => {
       if (response.ok) {
-        resolve(response.json());
+        response.json().then((tokenData: TokenData) => {
+          document.cookie = `userToken=${tokenData.token}`;
+          resolve(tokenData);
+        });
       } else {
         response
           .json()
