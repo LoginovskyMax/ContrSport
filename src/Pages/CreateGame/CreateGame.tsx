@@ -3,6 +3,7 @@ import { Calendar } from "primereact/calendar";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
+import { toast } from 'react-toastify';
 // import { YMaps, Map, Placemark, SearchControl } from '@pbe/react-yandex-maps';
 
 import Button from "../../Components/common/Button";
@@ -10,6 +11,7 @@ import Input from "../../Components/common/Input";
 import useUserStore from "../../store";
 import languageStore from "../../store/language";
 import themeStore from "../../store/theme";
+import { findUser, addEvent, getEvents } from "../../controller/UserControls";
 
 import "./CreateGame.scss";
 
@@ -17,7 +19,6 @@ const schema = yup.object().shape({
   name: yup.string().required(),
   time: yup.string().required(),
   adress: yup.string().required(),
-  place: yup.string().required(),
   teamCount: yup.number().required(),
 });
 const inputsProps = [
@@ -38,14 +39,6 @@ const inputsProps = [
     type: "text",
   },
   {
-    key: "place",
-    labelEn: "Place",
-    labelRu: "Место",
-    placeholderEn: "Place",
-    placeholderRu: "Место",
-    type: "text",
-  },
-  {
     key: "teamCount",
     labelEn: "Number of members",
     labelRu: "Количество участников",
@@ -57,29 +50,27 @@ const inputsProps = [
 
 const CreateGame = () => {
   const [createModal, setCreateModal] = useState(false);
-  const [teamError, setTeamError] = useState(false);
   const navigate = useNavigate();
-  const user = useUserStore((state) => state.userName);
+  const userEmail = useUserStore((state) => state.email);
   const theme = themeStore((state) => state.isDark);
   const isEn = languageStore((state) => state.isEn);
   const [expenditure, setExpenditure] = useState([
     { name: "", price: "", id: Date.now() },
   ]);
-  const [teamCount, setTeamCount] = useState<number[]>([]);
-  const [team, setTeam] = useState([]);
+  const [team, setTeam] = useState<string[]>([]);
+  const [findUsers, setFindUsers] = useState<any[]>([]);
 
-  const defaultState = {
-    center: [49.80776, 73.088504],
-    zoom: 10,
-    controls: [],
-  };
+  // const defaultState = {
+  //   center: [49.80776, 73.088504],
+  //   zoom: 10,
+  //   controls: [],
+  // };
 
-  const { values, handleChange, handleBlur, handleSubmit, errors, touched } =
+  const { values, handleChange, handleBlur, handleSubmit, errors, touched, resetForm } =
     useFormik({
       initialValues: {
         name: "",
         adress: "",
-        place: "",
         teamCount: '',
         time: new Date(),
       },
@@ -89,11 +80,12 @@ const CreateGame = () => {
       },
     });
   useEffect(() => {
-    if (values.teamCount ) {
-      const arr = new Array(parseFloat(values.teamCount)).fill(0);
-      setTeamCount(arr);
+    if (!createModal){
+      setExpenditure([{ name: "", price: "", id: Date.now() },])
+      setTeam([])
+      resetForm()
     }
-  }, [values.teamCount]);
+  }, [createModal]);
 
   const setName = (value: string, id: number) => {
     const arr = [...expenditure];
@@ -108,6 +100,7 @@ const CreateGame = () => {
   };
 
   const addPrice = () => {
+    toast("Wow so easy!")
     const arr = [...expenditure];
     arr.push({ name: "", price: "", id: Date.now() });
     setExpenditure(arr);
@@ -119,29 +112,69 @@ const CreateGame = () => {
     setExpenditure(arr);
   };
 
-  const findPlayer = (searchStr: string) => {
+  const findPlayer = async (searchStr: string) => {
+     if(searchStr){
+      const response = await findUser(searchStr)
+      setFindUsers(response)
+     }else{
+      setFindUsers([])
+     }
+  
     // Запрос на поиск игрока
   };
 
-  const sendEventToServer = () => {
+  const sendEventToServer = async () => {
     handleSubmit();
     if(team.length===0){
-      setTeamError(true)
+      toast(isEn? "Добавьте игроков в команду" : "Add players")
     }
     
-    if (Object.entries(errors).length === 0 && team.length!==0) {
-      const priceForPerson =
-        expenditure.reduce((acc, item) => acc + parseFloat(item.price), 0) /
-        parseFloat(values.teamCount);
+    if (Object.entries(errors).length === 0 && team.length=== parseFloat(values.teamCount)-1) {
       const payload = {
-        ...values,
+        address:values.adress,
+        date:new Date(values.time).toLocaleString(),
+        place:values.name,
         team,
-        expenditure,
-        priceForPerson,
+        expenditure:expenditure.map((item)=>{
+          return {name:item.name, price:parseFloat(item.price)}
+        }),
       };
-      console.log(payload);
+      console.log(payload)
+      const response = await addEvent(payload)
+      if(!response?.statusCode){
+        setCreateModal(false)
+      }
+    const event = await getEvents()
+     if(event.length>0){
+     if(event.filter((game)=>game.team[0].email !== userEmail)){
+      toast(isEn ? 'Посмотрите события на которые вас пригласили' : 'See events!')
+     }
+     if(event.filter((game)=>game.team[0].email === userEmail && !game.team[0].confirmed )){
+      toast(isEn ? 'У вас есть неоплаченные игры' : 'You have unpay games')
+     }
+    
+  }
+      console.log(response);
+      console.log(event)
     }
   };
+
+  const addToTeam = (email:string) => {
+    
+    let arr = [...team]
+    console.log(values.teamCount)
+    if(parseFloat(values.teamCount)-1===arr.length){
+      toast(isEn? "Команда набрана" : "Team is full")
+      return
+    }
+    if(arr.findIndex(user=>user===email)===-1 && email!==userEmail){
+      arr.push(email)
+      setTeam(arr)
+    }else{
+      toast(isEn? "Такой игрок уже есть" : "This player already exist")
+    }
+   
+  }
 
   return (
     <div className={theme ? "create-game dark-theme" : "create-game"}>
@@ -242,16 +275,21 @@ const CreateGame = () => {
             <p>{isEn ? "Добавление игроков" : "Add players"}</p>
             <Input
               type="text"
-              label={isEn ? "Почта игрока" : "Player email"}
-              placeholder={isEn ? "Почта игрока" : "Player email"}
+              label={isEn ? "Найти игрока" : "Find player"}
+              placeholder={isEn ? "Найти игрока" : "Find player"}
               onChange={(event) => findPlayer(event.target.value)}
             />
+            <ul>
+              {findUsers.map((user)=>(
+                <li key={user.id}>{user.firstName}
+                <Button className="authentication__button" onClick={()=>addToTeam(user.email)}>+</Button></li>
+              ))}
+            </ul>
             <ol>
-              {teamCount.map((_, i) => (
-                <li key={Math.random()}>{i}</li>
+              {team.map((user) => (
+                <li key={user}>{user}</li>
               ))}
             </ol>
-            {teamError && <p>{isEn ? "Мало игроков" : "Add players"}</p>}
           </div>
         </div>
       )}

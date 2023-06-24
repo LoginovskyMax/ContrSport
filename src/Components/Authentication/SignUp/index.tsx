@@ -17,6 +17,7 @@ import Input from "../../common/Input";
 import HelperText from "../HelperText";
 
 import "../style.scss";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object().shape({
   firstName: yup.string().min(3).max(30).required(),
@@ -92,10 +93,10 @@ const SignUp: FC<SignUpProps> = ({
   setForgotOpened,
 }) => {
   const setUser = useUserStore((state) => state.setUser);
-
   const [errorMsg, setErrorMsg] = useState("");
   const { isEn } = languageStore();
   const { setStatus } = useStatusStore();
+  const navigate = useNavigate();
 
   const { values, handleChange, handleBlur, handleSubmit, touched, errors } =
     useFormik({
@@ -118,13 +119,14 @@ const SignUp: FC<SignUpProps> = ({
         };
         delete newData.confirmPassword;
         createUser(newData)
-          .then(() => checkUserToken())
+          .then(() => checkUserToken()) 
           .then((userDetails) => {
             setStatus({
               isLoading: false,
               message: "You have successfully registered!",
             });
             setUser(userDetails);
+            navigate('createGame')
             setModalClosed();
           })
           .catch((error) => {

@@ -12,7 +12,7 @@ import "./style.scss";
 const MainPage = () => {
   const [isModalClosed, setModalClosed] = useState(true);
   const navigate = useNavigate();
-  const user = useUserStore((state) => state.userName);
+  const user = useUserStore((state) => state.firstName);
   const theme = themeStore((state) => state.isDark);
   const isEn = languageStore((state) => state.isEn);
 
@@ -20,7 +20,7 @@ const MainPage = () => {
     if (user === null) {
       setModalClosed(false);
     } else {
-      navigate("/games");
+      navigate("/createGame");
     }
   };
 

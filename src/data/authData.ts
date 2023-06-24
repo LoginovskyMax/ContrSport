@@ -2,7 +2,7 @@ export const BACKEND_URL = "https://api.contr-sport.online";
 
 export const BACKEND_LOGIN_PATH = "/auth/login/";
 
-export const BACKEND_MYUSER_PATH = "/auth/myuser/";
+export const BACKEND_MYUSER_PATH = "/auth/me/";
 
 export const BACKEND_REG_PATH = "/auth/registration";
 
@@ -16,7 +16,7 @@ export const FETCH_ERROR = "Failed to fetch";
 
 export const FETCH_CORRECT_ERROR = "Too frequent requests";
 
-export const ADD_EVENT = "/auth/users";
+export const ADD_EVENT = "/events/create";
 
 export const USER_PATH = "/auth/user";
 
@@ -27,12 +27,15 @@ export interface Values {
 
 export interface UserData {
   _id: string;
-  userName: string;
   image?: string;
+  firstName: string;
+  lastName: string;
+  telegram: string;
+  gender: string;
+  countryCode: string;
+  phone: string;
   email: string;
-  status: Array<string>;
-  banned: boolean;
-  date: Date;
+  password: string;
 }
 
 export interface TokenData {
@@ -51,7 +54,7 @@ export interface NewUserData {
 }
 
 export interface ForgotUserData {
-  userName?: string;
+  firstName?: string;
   email?: string;
 }
 

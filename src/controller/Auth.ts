@@ -101,6 +101,7 @@ export const createUser = async (data: NewUserData) =>
     }).then((response) => {
       if (response.ok) {
         response.json().then((tokenData: TokenData) => {
+          console.log(tokenData)
           document.cookie = `userToken=${tokenData.token}`;
           resolve(tokenData);
         });

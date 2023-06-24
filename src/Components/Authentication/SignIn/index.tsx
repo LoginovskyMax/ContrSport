@@ -14,6 +14,7 @@ import Input from "../../common/Input";
 import HelperText from "../HelperText";
 
 import "../style.scss";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -54,6 +55,7 @@ const SignIn: FC<SignInProps> = ({
   const { isEn } = languageStore();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { setStatus } = useStatusStore();
+  const navigate = useNavigate();
 
   const { values, handleChange, handleBlur, handleSubmit, errors, touched } =
     useFormik({
@@ -72,6 +74,7 @@ const SignIn: FC<SignInProps> = ({
               isLoading: false,
               message: "You are logged in",
             });
+            navigate('createGame')
             setModalClosed();
           })
           .catch((error) => {

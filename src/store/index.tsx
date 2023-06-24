@@ -1,35 +1,40 @@
 import { create } from "zustand";
 
 export type userSetter = (user: {
-  userName: string | null;
-  image?: string;
-  status: Array<string>;
-  banned: boolean;
+  firstName: string | null;
   email: string | null;
+  image?: string;
+  lastName: string | null;
+  telegram: string | null;
+  password: string | null;
 }) => void;
 
 interface UsersState {
-  userName: string | null;
+  firstName: string | null;
   image?: string;
-  status: Array<string>;
-  banned: boolean;
+  lastName: string | null;
+  telegram: string | null;
+  password: string | null;
+  email: string | null;
   setUser: userSetter;
   fetched: boolean;
 }
 
 const useUserStore = create<UsersState>((set) => ({
-  userName: null,
-  status: [],
-  banned: false,
+  firstName: null,
   email: null,
   fetched: false,
+  lastName: null,
+  telegram: null,
+  password: null,
   setUser: (newUser) => set(() => newUser),
 }));
 
 export const nullUser = {
-  userName: null,
-  status: [],
-  banned: false,
+  firstName: null,
+  lastName: null,
+  telegram: null,
+  password: null,
   email: null,
   fetched: true,
 };
