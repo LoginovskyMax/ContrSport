@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { Calendar } from "primereact/calendar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 // import { YMaps, Map, Placemark, SearchControl } from '@pbe/react-yandex-maps';
@@ -19,8 +19,6 @@ const schema = yup.object().shape({
   adress: yup.string().required(),
   place: yup.string().required(),
   teamCount: yup.number().required(),
-  expenditureName: yup.string().required(),
-  expenditurePrice: yup.number().required(),
 });
 const inputsProps = [
   {
@@ -55,30 +53,20 @@ const inputsProps = [
     placeholderRu: "Количество участников",
     type: "number",
   },
-  {
-    key: "expenditureName",
-    labelEn: "expenditure Name",
-    labelRu: "Название расхода",
-    placeholderEn: "expenditure Name",
-    placeholderRu: "Название расхода",
-    type: "text",
-  },
-  {
-    key: "expenditurePrice",
-    labelEn: "expenditure Price",
-    labelRu: "Цена расхода",
-    placeholderEn: "expenditure Price",
-    placeholderRu: "Цена расхода",
-    type: "number",
-  },
 ] as const;
 
 const CreateGame = () => {
   const [createModal, setCreateModal] = useState(false);
+  const [teamError, setTeamError] = useState(false);
   const navigate = useNavigate();
   const user = useUserStore((state) => state.userName);
   const theme = themeStore((state) => state.isDark);
   const isEn = languageStore((state) => state.isEn);
+  const [expenditure, setExpenditure] = useState([
+    { name: "", price: "", id: Date.now() },
+  ]);
+  const [teamCount, setTeamCount] = useState<number[]>([]);
+  const [team, setTeam] = useState([]);
 
   const defaultState = {
     center: [49.80776, 73.088504],
@@ -92,18 +80,68 @@ const CreateGame = () => {
         name: "",
         adress: "",
         place: "",
-        teamCount: 1,
+        teamCount: '',
         time: new Date(),
-        expenditureName: "",
-        expenditurePrice: 0,
       },
       validationSchema: schema,
       onSubmit: (data) => {
-        // отправка данных формы на сервер
-        console.log(data);
-        setCreateModal(false);
+         
       },
     });
+  useEffect(() => {
+    if (values.teamCount ) {
+      const arr = new Array(parseFloat(values.teamCount)).fill(0);
+      setTeamCount(arr);
+    }
+  }, [values.teamCount]);
+
+  const setName = (value: string, id: number) => {
+    const arr = [...expenditure];
+    arr[arr.findIndex((item) => item.id === id)].name = value;
+    setExpenditure(arr);
+  };
+
+  const setPrice = (value: string, id: number) => {
+    const arr = [...expenditure];
+    arr[arr.findIndex((item) => item.id === id)].price = value;
+    setExpenditure(arr);
+  };
+
+  const addPrice = () => {
+    const arr = [...expenditure];
+    arr.push({ name: "", price: "", id: Date.now() });
+    setExpenditure(arr);
+  };
+
+  const deletePrice = (id: number) => {
+    let arr = [...expenditure];
+    arr = arr.filter((item) => item.id !== id);
+    setExpenditure(arr);
+  };
+
+  const findPlayer = (searchStr: string) => {
+    // Запрос на поиск игрока
+  };
+
+  const sendEventToServer = () => {
+    handleSubmit();
+    if(team.length===0){
+      setTeamError(true)
+    }
+    
+    if (Object.entries(errors).length === 0 && team.length!==0) {
+      const priceForPerson =
+        expenditure.reduce((acc, item) => acc + parseFloat(item.price), 0) /
+        parseFloat(values.teamCount);
+      const payload = {
+        ...values,
+        team,
+        expenditure,
+        priceForPerson,
+      };
+      console.log(payload);
+    }
+  };
 
   return (
     <div className={theme ? "create-game dark-theme" : "create-game"}>
@@ -126,7 +164,7 @@ const CreateGame = () => {
         {isEn ? "Создать игру" : "Create game"}
       </Button>
       {createModal && (
-        <div>
+        <div className="create-game__cont">
           <form onSubmit={handleSubmit}>
             {inputsProps.map(
               ({
@@ -159,11 +197,72 @@ const CreateGame = () => {
               hourFormat="24"
               name="time"
             />
-            <Button className="authentication__button" type="submit">
-              {isEn ? "Создать" : "Create"}
-            </Button>
           </form>
+          <div>
+            <div className="create-game__cont__title">
+              <p>{isEn ? "Расходы на игру" : "Create"}</p>
+              <Button
+                className="authentication__button"
+                type="button"
+                onClick={addPrice}
+              >
+                +
+              </Button>
+            </div>
+            {expenditure.map((item, i) => (
+              <div key={item.id} className="create-game__price-list">
+                <div>
+                  <Input
+                    type="text"
+                    label={isEn ? "Название расхода" : "Expenditure name"}
+                    placeholder={isEn ? "Название расхода" : "Expenditure name"}
+                    value={item.name}
+                    onChange={(event) => setName(event.target.value, item.id)}
+                  />
+                  <Input
+                    type="number"
+                    label={isEn ? "Cумма расхода" : "Expenditure price"}
+                    placeholder={isEn ? "Cумма расхода" : "Expenditure price"}
+                    value={item.price}
+                    onChange={(event) => setPrice(event.target.value, item.id)}
+                  />
+                </div>
+                <Button
+                  className="authentication__button"
+                  type="button"
+                  onClick={() => deletePrice(item.id)}
+                >
+                  -
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <p>{isEn ? "Добавление игроков" : "Add players"}</p>
+            <Input
+              type="text"
+              label={isEn ? "Почта игрока" : "Player email"}
+              placeholder={isEn ? "Почта игрока" : "Player email"}
+              onChange={(event) => findPlayer(event.target.value)}
+            />
+            <ol>
+              {teamCount.map((_, i) => (
+                <li key={Math.random()}>{i}</li>
+              ))}
+            </ol>
+            {teamError && <p>{isEn ? "Мало игроков" : "Add players"}</p>}
+          </div>
         </div>
+      )}
+      {createModal && (
+        <Button
+          className="authentication__button"
+          type="button"
+          onClick={sendEventToServer}
+        >
+          {isEn ? "Создать" : "Create"}
+        </Button>
       )}
     </div>
   );
