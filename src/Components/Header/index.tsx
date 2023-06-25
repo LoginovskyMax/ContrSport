@@ -56,8 +56,7 @@ const Header: FC = () => {
          getEvents()
          .then((games)=>{
           if(games.length>0){
-            console.log(games.filter((game)=>{console.log(game.team[0].email);return game.team[0].email !== email;}))
-            if(games.filter((game)=>game.team[0].email === email).length>0){
+            if(games.filter((game)=>game.team[0].email !== email).length>0){
              toast(isEn ? 'Посмотрите события на которые вас пригласили' : 'See events!')
             }
             if(games.filter((game)=>game.team[0].email === email && !game.team[0].confirmed )){

@@ -1,0 +1,96 @@
+.wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 90%;
+  }
+  .price{
+    font-weight: bold;
+    font-family: 'Russo One', sans-serif;
+    font-size: 20px;
+    margin: 20px;
+  }
+  .form{
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding:10px 30px;
+      border-radius: 20px;
+      border: 2px solid #7e6dd1;
+      &__title{
+        padding: 0;
+        margin: 0;
+        font-weight: bold;
+        font-size: 1.3em;
+      }
+      &__succes{
+        position: absolute;
+        top: 50%;
+        font-size: 2em;
+        color: wheat;
+        background-color: green;
+        padding: 20px;
+        width: 100%;
+      }
+      &__text_inp{
+        width: 100%;
+        height: 40px;
+        padding: 10px 0 10px 15px;
+        border: 2px solid #7e6dd1;
+        border-radius: 5px;
+        outline: unset;
+      
+        &::placeholder {
+          font-size: 16px;
+          line-height: 20px;
+        }
+      
+        &__label {
+          color: #4f4c6b;
+          font-weight: 600;
+        }
+      
+        &__error-message {
+          margin-top: 10px;
+          color: purple;
+          margin-left: 3px;
+          font-size: 14px;
+          line-height: 16px;
+          text-transform: capitalize;
+        }
+      }
+      &__area{
+        width: 100%;
+        height: 100px;
+        padding: 10px 0 10px 15px;
+        border: 2px solid #7e6dd1;
+        border-radius: 5px;
+        outline: unset;
+        resize: none;
+        &::placeholder {
+          font-size: 16px;
+          line-height: 20px;
+        }
+      }
+      &__field{
+        border: none;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      &__select{
+        width: 104%;
+        padding: 10px 15px;
+        border: 2px solid #7e6dd1;
+        border-radius: 5px;
+        outline: unset;
+        font-size: 16px;
+        line-height: 20px;
+      }
+  }
+  

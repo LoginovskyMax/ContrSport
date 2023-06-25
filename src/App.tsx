@@ -5,6 +5,7 @@ import CreateGame from "./Pages/CreateGame/CreateGame";
 import MainPage from "./Pages/MainPage";
 import NotFound from "./Pages/NotFound/NotFound";
 import themeStore from "./store/theme";
+import PayPage from "./Pages/PayPage/PayPage";
 
 const App = () => {
   const isDark = themeStore((state) => state.isDark);
@@ -16,6 +17,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/createGame" element={<CreateGame />} />
+        <Route path="/pay-page/:gameId" element={<PayPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
