@@ -14,20 +14,21 @@ import Input from "../../common/Input";
 import HelperText from "../HelperText";
 
 import "../style.scss";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object().shape({
-  userName: yup.string().min(3).max(30).required(),
+  email: yup.string().email().required(),
   password: yup.string().required(),
 });
 
 const inputsProps = [
   {
-    key: "userName",
-    labelEn: "Name",
-    labelRu: "Имя",
-    placeholderEn: "Username",
-    placeholderRu: "Имя пользователя",
-    type: "text",
+    key: "email",
+    labelEn: "email",
+    labelRu: "email",
+    placeholderEn: "email",
+    placeholderRu: "Почта",
+    type: "email",
   },
   {
     key: "password",
@@ -54,11 +55,12 @@ const SignIn: FC<SignInProps> = ({
   const { isEn } = languageStore();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { setStatus } = useStatusStore();
+  const navigate = useNavigate();
 
   const { values, handleChange, handleBlur, handleSubmit, errors, touched } =
     useFormik({
       initialValues: {
-        userName: "",
+        email: "",
         password: "",
       },
       validationSchema: schema,
@@ -72,6 +74,7 @@ const SignIn: FC<SignInProps> = ({
               isLoading: false,
               message: "You are logged in",
             });
+            navigate('createGame')
             setModalClosed();
           })
           .catch((error) => {

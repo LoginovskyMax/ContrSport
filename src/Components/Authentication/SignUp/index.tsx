@@ -17,9 +17,12 @@ import Input from "../../common/Input";
 import HelperText from "../HelperText";
 
 import "../style.scss";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object().shape({
-  userName: yup.string().min(3).max(30).required(),
+  firstName: yup.string().min(3).max(30).required(),
+  lastName: yup.string().min(3).max(30).required(),
+  telegram: yup.string().min(3).max(30).required(),
   email: yup.string().email().required(),
   password: yup.string().required(),
   confirmPassword: yup
@@ -29,12 +32,28 @@ const schema = yup.object().shape({
 
 const inputsProps = [
   {
-    key: "userName",
+    key: "firstName",
     labelEn: "Name",
     labelRu: "Имя",
     type: "text",
     placeholderEn: "Username",
     placeholderRu: "Имя пользователя",
+  },
+  {
+    key: "lastName",
+    labelEn: "lastName",
+    labelRu: "Фамилия",
+    type: "text",
+    placeholderEn: "LastName",
+    placeholderRu: "Фамилия",
+  },
+  {
+    key: "telegram",
+    labelEn: "Telegram",
+    labelRu: "Телеграм",
+    type: "text",
+    placeholderEn: "Telegram",
+    placeholderRu: "Телеграм",
   },
   {
     key: "email",
@@ -74,32 +93,40 @@ const SignUp: FC<SignUpProps> = ({
   setForgotOpened,
 }) => {
   const setUser = useUserStore((state) => state.setUser);
-
   const [errorMsg, setErrorMsg] = useState("");
   const { isEn } = languageStore();
   const { setStatus } = useStatusStore();
+  const navigate = useNavigate();
 
   const { values, handleChange, handleBlur, handleSubmit, touched, errors } =
     useFormik({
       initialValues: {
-        userName: "",
+        firstName: "",
+        lastName: "",
         email: "",
+        telegram: "",
         password: "",
-        confirmPassword: "",
+        confirmPassword: "" || undefined,
       },
       validationSchema: schema,
       onSubmit: (data) => {
         setStatus({ isLoading: true, message: "" });
-
-        createUser(data)
-          .then(() => authLogin(data))
-          .then(() => checkUserToken())
+        const newData = {
+          ...data,
+          countryCode: "+7",
+          gender: "Male",
+          phone: "7002255387",
+        };
+        delete newData.confirmPassword;
+        createUser(newData)
+          .then(() => checkUserToken()) 
           .then((userDetails) => {
             setStatus({
               isLoading: false,
               message: "You have successfully registered!",
             });
             setUser(userDetails);
+            navigate('createGame')
             setModalClosed();
           })
           .catch((error) => {

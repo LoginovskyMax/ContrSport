@@ -19,7 +19,7 @@ interface ChangePassProps {
 
 const ChangePass: FC<ChangePassProps> = ({ setModalClosed }) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const { userName } = useUserStore();
+  const { firstName } = useUserStore();
 
   const { setStatus } = useStatusStore();
   const { isEn } = languageStore();
@@ -81,7 +81,7 @@ const ChangePass: FC<ChangePassProps> = ({ setModalClosed }) => {
 
   return (
     <div className="authentication">
-      <p className="authentication__title">Change password for {userName}:</p>
+      <p className="authentication__title">Change password for {firstName}:</p>
       <form className="authentication__content" onSubmit={handleSubmit}>
         {inputsProps.map(({ key, label, type, placeholder }) => (
           <Input

@@ -55,7 +55,7 @@ const ResetPass: FC<ResetPassProps> = ({ resetToken }) => {
     setStatus({ isLoading: true, message: "" });
     getUserNameByResetToken(resetToken)
       .then((resp) => {
-        const resUserName = resp.userName ?? "";
+        const resUserName = resp.firstName ?? "";
         setUserName(resUserName);
         setStatus({ isLoading: false, message: "" });
       })

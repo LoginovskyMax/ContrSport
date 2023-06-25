@@ -8,17 +8,20 @@ import languageStore from "../../store/language";
 import themeStore, { LS_THEME } from "../../store/theme";
 import AuthenticationModal from "../Authentication";
 import Button from "../common/Button";
+import { toast } from 'react-toastify';
+import { getEvents } from "../../controller/UserControls";
 
 import { LangComp } from "./Lang/LangComp";
 import Logo from "./Logo";
 import User from "./User";
+import { EventData } from "../../data/authData";
 
 import "./style.scss";
 
 const Header: FC = () => {
   const [isModalClosed, setModalClosed] = useState(true);
   const [rotate, setRotate] = useState(false);
-  const { userName, image, setUser } = useUserStore();
+  const { firstName, image, setUser, email } = useUserStore();
   const { isEn } = languageStore();
   const theme = themeStore((state) => state.isDark);
   const changeTheme = themeStore((state) => state.setTheme);
@@ -40,17 +43,29 @@ const Header: FC = () => {
     }
   }, []);
 
-  useEffect(() => {
+   useEffect(() => {
     checkUserToken()
       .then((userData) => {
         setUser({
-          userName: userData.userName,
-          image: userData.image,
-          status: userData.status,
-          banned: userData.banned,
+          firstName: userData.firstName,
           email: userData.email,
+          lastName:userData.lastName,
+          telegram:userData.telegram,
+          password:userData.password
         });
-      })
+         getEvents()
+         .then((games)=>{
+          if(games.length>0){
+            console.log(games.filter((game)=>{console.log(game.team[0].email);return game.team[0].email !== email;}))
+            if(games.filter((game)=>game.team[0].email === email).length>0){
+             toast(isEn ? 'Посмотрите события на которые вас пригласили' : 'See events!')
+            }
+            if(games.filter((game)=>game.team[0].email === email && !game.team[0].confirmed )){
+             toast(isEn ? 'У вас есть неоплаченные игры' : 'You have unpay games')
+            }
+          }
+         })
+        })
       .catch(() => {
         setUser(nullUser);
       });
@@ -67,8 +82,8 @@ const Header: FC = () => {
           className={rotate ? "header__rotate" : "header__theme"}
           onClick={handler}
         />
-        {userName ? (
-          <User username={userName} setUser={setUser} image={image} />
+        {firstName ? (
+          <User username={firstName} setUser={setUser} image={image} />
         ) : (
           <Button onClick={() => setModalClosed(false)}>
             {isEn ? "Войти" : "Sign in"}
