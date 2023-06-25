@@ -9,11 +9,13 @@ import Input from "../../Components/common/Input";
 import useUserStore from "../../store";
 import languageStore from "../../store/language";
 import themeStore from "../../store/theme";
+import priceStore from "../../store/price"
 
-import { findUser, addEvent, getEvents } from "../../controller/UserControls";
+import { findUser, addEvent, getEvents, delEvent } from "../../controller/UserControls";
 
 import "./CreateGame.scss";
 import { EventData, UserData } from "../../data/authData";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object().shape({
   name: yup.string().required(),
@@ -51,6 +53,7 @@ const inputsProps = [
 const CreateGame = () => {
   const [createModal, setCreateModal] = useState(false);
   const [listModal, setListModal] = useState(false);
+  const [findText, setFindText] = useState('');
   const userEmail = useUserStore((state) => state.email);
   const theme = themeStore((state) => state.isDark);
   const isEn = languageStore((state) => state.isEn);
@@ -61,6 +64,8 @@ const CreateGame = () => {
   const [findUsers, setFindUsers] = useState<UserData[]>([]);
   const [yourGames, setYourGames] = useState<EventData[]>([]);
   const [unpayGames, setUnpayGames] = useState<EventData[]>([]);
+  const navigate = useNavigate();
+  const setPriceTo = priceStore(state=>state.setPrice)
 
   const { values, handleChange, handleBlur, handleSubmit, errors, touched, resetForm } =
     useFormik({
@@ -80,8 +85,16 @@ const CreateGame = () => {
       setExpenditure([{ name: "", price: "", id: Date.now() },])
       setTeam([])
       resetForm()
+    }else{
+      setListModal(false)
     }
   }, [createModal]);
+
+  useEffect(() => {
+    if (listModal){
+      setCreateModal(false)
+    }
+  }, [listModal]);
 
   const setName = (value: string, id: number) => {
     const arr = [...expenditure];
@@ -96,7 +109,6 @@ const CreateGame = () => {
   };
 
   const addPrice = () => {
-    toast("Wow so easy!")
     const arr = [...expenditure];
     arr.push({ name: "", price: "", id: Date.now() });
     setExpenditure(arr);
@@ -109,14 +121,13 @@ const CreateGame = () => {
   };
 
   const findPlayer = async (searchStr: string) => {
+     setFindText(searchStr)
      if(searchStr){
       const response = await findUser(searchStr)
       setFindUsers(response)
      }else{
       setFindUsers([])
      }
-  
-    // Запрос на поиск игрока
   };
 
   const sendEventToServer = async () => {
@@ -135,18 +146,17 @@ const CreateGame = () => {
           return {name:item.name, price:parseFloat(item.price)}
         }),
       };
-      const response = await addEvent(payload)
+      await addEvent(payload)
       setCreateModal(false)
       
     const event = await getEvents()
      if(event.length>0){
-     if(event.filter((game)=>game.team[0].email !== userEmail)){
+     if(event.filter((game)=>game.team[0].email !== userEmail).length>0){
       toast(isEn ? 'Посмотрите события на которые вас пригласили' : 'See events!')
      }
      if(event.filter((game)=>game.team[0].email === userEmail && !game.team[0].confirmed )){
       toast(isEn ? 'У вас есть неоплаченные игры' : 'You have unpay games')
      }
-    
   }
     }
   };
@@ -154,15 +164,16 @@ const CreateGame = () => {
   const getListOfGames = async () => {
     setListModal((prev) => (prev = !prev))
     const event = await getEvents()
-    console.log(event)
     setYourGames(event.filter((game)=>game.team[0].email === userEmail))
     setUnpayGames(event.filter((game)=>game.team[0].email !== userEmail))
   }
 
   const addToTeam = (email:string) => {
-    
+    if(!values.teamCount){
+      toast(isEn? "Выверите количество участников" : "Set count of players")
+      return
+    }
     let arr = [...team]
-    console.log(values.teamCount)
     if(parseFloat(values.teamCount)-1===arr.length){
       toast(isEn? "Команда набрана" : "Team is full")
       return
@@ -170,14 +181,30 @@ const CreateGame = () => {
     if(arr.findIndex(user=>user===email)===-1 && email!==userEmail){
       arr.push(email)
       setTeam(arr)
+      setFindUsers([])
+      setFindText('')
     }else{
       toast(isEn? "Такой игрок уже есть" : "This player already exist")
     }
-   
+  }
+
+  const deleteEvent = async (id:number)=> {
+    await delEvent(id)
+    const event = await getEvents()
+    setYourGames(event.filter((game)=>game.team[0].email === userEmail))
+    setUnpayGames(event.filter((game)=>game.team[0].email !== userEmail))
+  }
+
+  const goToPay = (sum:EventData) => {
+    if(sum.priceForPersone){
+      setPriceTo( Math.round(sum.priceForPersone))
+    }
+    navigate('/pay-page/'+sum.id)
   }
 
   return (
     <div className={theme ? "create-game dark-theme" : "create-game"}>
+      <div className='create-game__btns-block'>
       <Button
         className="create-game__button"
         onClick={() => setCreateModal((prev) => (prev = !prev))}
@@ -190,6 +217,8 @@ const CreateGame = () => {
       >
         {isEn ? "Список игр" : "Games list"}
       </Button>
+      </div>
+    
       {createModal && (
         <div className="create-game__cont">
           <form onSubmit={handleSubmit}>
@@ -227,7 +256,7 @@ const CreateGame = () => {
           </form>
           <div>
             <div className="create-game__cont__title">
-              <p>{isEn ? "Расходы на игру" : "Create"}</p>
+              <p className="create-game__title">{isEn ? "Расходы на игру" : "Create"}</p>
               <Button
                 className="authentication__button"
                 type="button"
@@ -266,11 +295,11 @@ const CreateGame = () => {
           </div>
 
           <div>
-            <p>{isEn ? "Добавление игроков" : "Add players"}</p>
             <Input
               type="text"
               label={isEn ? "Найти игрока" : "Find player"}
               placeholder={isEn ? "Найти игрока" : "Find player"}
+              value={findText}
               onChange={(event) => findPlayer(event.target.value)}
             />
             <ul>
@@ -288,38 +317,70 @@ const CreateGame = () => {
         </div>
       )}
       {listModal && <div className="games">
-      <div className="games__item">
-        <p className="games__item-small">{isEn? "Название :" : "Name :"}</p>
-        <p className="games__item-small">{isEn? "Адрес :" : "Adress :"}</p>
-        <p className="games__item-small">{isEn? "Время :" : "Date :"}</p>
-        <p className="games__item-small">{isEn? "К оплате :" : "Price :"}</p>
-        <p className="games__item-small">{isEn? "Расход :" : "Expenditure :"}</p>
-        <p className="games__item-small">{isEn? "Команда :" : "Team :"}</p>
+      <div className="games__item" key={Math.random()}>
+        <p className="games__item-title">{isEn? "Название" : "Name"}</p>
+        <p className="games__item-title">{isEn? "Адрес" : "Adress"}</p>
+        <p className="games__item-title">{isEn? "Время" : "Date"}</p>
+        <p className="games__item-title">{isEn? "К оплате" : "Price"}</p>
+        <p className="games__item-title">{isEn? "Расход" : "Expenditure"}</p>
+        <p className="games__item-title">{isEn? "Команда" : "Team"}</p>
+        <p className="games__item-title">{isEn? "Управление" : "Controls"}</p>
       </div>
         {yourGames.map((game)=>(
-  <div className="games__item">
+  <div className="games__item" key={game.id}>
 <p className="games__item-small">{game.place}</p>
 <p className="games__item-small">{game.address}</p>
 <p className="games__item-small">{game.date}</p>
 <p className="games__item-small">{ game.priceForPersone ? Math.round(game.priceForPersone) : ''}</p>
-<div  className="games__item_cont">
+<div  className="games__item_cont" key={Math.random()}>
 {game.expenditure.map((exp)=>(
-  <div className="games__item_exp">
+  <div className="games__item_exp" key={exp.price}>
   <p className="games__item_exp-text">{exp.name}</p>
   <p className="games__item_exp-text">{exp.price}</p>
   </div>
 ))}
 </div>
 
-<div className="games__item_cont">
+<div className="games__item_cont" key={Math.random()}>
 {game.team.map((exp)=>(
-  <div  className="games__item_exp">
-    <p className="games__item_exp-text">{isEn? "Игрок :" : "Player :"}{exp.firstName}</p>
-    <p className="games__item_exp-text">{isEn? "Оплачено :" : "Confirmed :"}{exp.confirmed ? isEn ? 'Да': 'Yes' : isEn ? 'Нет' : 'No'}</p>
+  <div  className="games__item_exp" key={exp.id}>
+    <p className="games__item_exp-text">{isEn? "Игрок : " : "Player : "}{exp.firstName}</p>
+    <p className="games__item_exp-text">{isEn? "Оплачено : " : "Confirmed : "}{exp.confirmed ? isEn ? 'Да': 'Yes' : isEn ? 'Нет' : 'No'}</p>
+  </div>
+))}
+</div>
+<div className="games__item_exp" key={Math.random()}>
+<Button className="games_btn" onClick={()=>deleteEvent(game.id)}>{isEn? "Удалить" : "Delete"}</Button>
+</div>
+
+  </div>
+        ))}
+         {unpayGames.map((game)=>(
+  <div className="games__item" key={game.id}>
+<p className="games__item-small">{game.place}</p>
+<p className="games__item-small">{game.address}</p>
+<p className="games__item-small">{game.date}</p>
+<p className="games__item-small">{ game.priceForPersone ? Math.round(game.priceForPersone) : ''}</p>
+<div  className="games__item_cont" key={Math.random()}>
+{game.expenditure.map((exp)=>(
+  <div className="games__item_exp" key={exp.price}>
+  <p className="games__item_exp-text">{exp.name}</p>
+  <p className="games__item_exp-text">{exp.price}</p>
   </div>
 ))}
 </div>
 
+<div className="games__item_cont" key={Math.random()}>
+{game.team.map((exp)=>(
+  <div  className="games__item_exp" key={exp.firstName}>
+    <p className="games__item_exp-text">{isEn? "Игрок : " : "Player : "}{exp.firstName}</p>
+    <p className="games__item_exp-text">{isEn? "Оплачено : " : "Confirmed : "}{exp.confirmed ? isEn ? 'Да': 'Yes' : isEn ? 'Нет' : 'No'}</p>
+  </div>
+))}
+</div>
+<div className="games__item_exp" key={Math.random()}>
+<Button className="games_btn" onClick={()=>goToPay(game)}>{isEn? "Оплатить" : "Pay"}</Button>
+</div>
 
   </div>
         ))}

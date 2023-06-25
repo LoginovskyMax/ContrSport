@@ -2,8 +2,16 @@
     display: flex;
     flex-direction: column;
     align-items:flex-start;
-    width: 90%;
+    width: 95%;
     min-height: calc(100vh - 160px);
+    &__title{
+      font-weight: bold;
+      font-family: 'Russo One', sans-serif;
+    }
+    &__btns-block{
+      display: flex;
+      gap: 20px;
+    }
     &__button {
       margin: 40px 0;
       min-width: 200px;
@@ -32,17 +40,37 @@
 
   .games{
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    &__item-title{
+      width: 15%;
+      font-weight: bold;
+      font-family: 'Russo One', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     &__item-small{
       width: 15%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  
+    }
+    &_btn{
+      width: 150px;
     }
     &__item{
       display: flex;
+      justify-content: flex-start;
       gap: 10px;
       width: 100%;
       &_cont{
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
+        justify-content: flex-start;
         width: 15%;
       }
       &_exp{

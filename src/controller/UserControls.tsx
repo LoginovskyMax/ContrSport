@@ -38,30 +38,38 @@ export const getEvents = async () => {
 }
  
 
-// export const banUser = async (userName: string) =>
-//   fetch(`${BACKEND_URL}${USER_PATH}/ban?userName=${userName}`, {
-//     method: "GET",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${getUserToken()}`,
-//     },
-//   });
+export const delEvent = async (id: number) =>
+  fetch(`${BACKEND_URL}/events/delete?id=${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getUserToken()}`,
+    }
+  }).then((response) => response.json());
 
-// export const unbanUser = async (userName: string) =>
-//   fetch(`${BACKEND_URL}${USER_PATH}/unban?userName=${userName}`, {
-//     method: "GET",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${getUserToken()}`,
-//     },
-//   });
+export const confirmEvent = async (id:number) =>
+  fetch(`${BACKEND_URL}/events/confirm?id=${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getUserToken()}`,
+    },
+  }).then((response) => response.json());
 
-// export const deleteUser = async (name: string) =>
-//   fetch(`${BACKEND_URL}${USER_PATH}`, {
-//     method: "DELETE",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${getUserToken()}`,
-//     },
-//     body: JSON.stringify({ userName: name }),
-//   }).then((response) => response.json());
+export const getOneEvent = async (id: number) =>
+  fetch(`${BACKEND_URL}/events/item?id=${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getUserToken()}`,
+    },
+  }).then((response) => response.json());
+
+  export const payForEvent = async (id: number|string, price:number|string) =>
+  fetch(`${BACKEND_URL}/events/confirm?id=${id}&price${price}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getUserToken()}`,
+    },
+  }).then((response) => response.json());
