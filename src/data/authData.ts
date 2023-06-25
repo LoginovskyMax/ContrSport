@@ -88,6 +88,7 @@ export interface EventData {
   priceForPersone?:number;
   expenditure:expenditure[]
   team:NewUserData[]
+  id:number;
 }
 export interface EventDataResp {
   address: string;
@@ -98,3 +99,12 @@ export interface EventDataResp {
   expenditure:expenditure[]
   team:string[]
 }
+
+export interface CardData {
+  firstName: string;
+  lastName: string;
+  CVV: number;
+  date: string;
+  cardNumber: number;
+}
+
