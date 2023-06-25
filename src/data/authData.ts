@@ -36,6 +36,7 @@ export interface UserData {
   phone: string;
   email: string;
   password: string;
+  id?:number
 }
 
 export interface TokenData {
@@ -43,6 +44,7 @@ export interface TokenData {
 }
 
 export interface NewUserData {
+  id?:number;
   firstName: string;
   lastName: string;
   telegram: string;
@@ -51,6 +53,7 @@ export interface NewUserData {
   phone: string;
   email: string;
   password: string;
+  confirmed?:boolean;
 }
 
 export interface ForgotUserData {
@@ -70,4 +73,28 @@ export interface NewPassData {
 export interface ChangePassData {
   password: string;
   newPassword: string;
+}
+
+interface expenditure {
+  name:string;
+  price:number;
+}
+
+export interface EventData {
+  address: string;
+  date: string;
+  place: string;
+  price?: number;
+  priceForPersone?:number;
+  expenditure:expenditure[]
+  team:NewUserData[]
+}
+export interface EventDataResp {
+  address: string;
+  date: string;
+  place: string;
+  price?: number;
+  priceForPersone?:number;
+  expenditure:expenditure[]
+  team:string[]
 }

@@ -41,7 +41,7 @@ const AuthenticationModal: FC<AuthenticationModalProps> = ({
 
   const { message } = useStatusStore();
 
-  const { userName } = useUserStore();
+  const { firstName } = useUserStore();
 
   const { isEn } = languageStore();
 
@@ -59,14 +59,14 @@ const AuthenticationModal: FC<AuthenticationModalProps> = ({
   }, [message]);
 
   useEffect(() => {
-    if (userName === "") {
+    if (firstName === "") {
       setModalClosed();
 
       if (windowVisible === authWindow.setPass) {
         window.location.search = "";
       }
     }
-  }, [userName]);
+  }, [firstName]);
 
   return (
     <Modal

@@ -106,7 +106,7 @@ const SignUp: FC<SignUpProps> = ({
         email: "",
         telegram: "",
         password: "",
-        confirmPassword: "",
+        confirmPassword: "" || undefined,
       },
       validationSchema: schema,
       onSubmit: (data) => {

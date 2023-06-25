@@ -14,6 +14,7 @@ import { getEvents } from "../../controller/UserControls";
 import { LangComp } from "./Lang/LangComp";
 import Logo from "./Logo";
 import User from "./User";
+import { EventData } from "../../data/authData";
 
 import "./style.scss";
 

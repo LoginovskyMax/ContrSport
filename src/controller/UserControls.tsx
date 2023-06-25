@@ -1,10 +1,11 @@
 
-import { ADD_EVENT, BACKEND_URL, USER_PATH } from "../data/authData";
+import { ADD_EVENT, BACKEND_URL, USER_PATH , EventData, EventDataResp} from "../data/authData";
+
 
 import { getUserToken } from "./Auth";
 
 
-export const addEvent = async (data) =>
+export const addEvent = async (data:EventDataResp) =>
   fetch(`${BACKEND_URL}${ADD_EVENT}`, {
     method: "POST",
     headers: {
@@ -12,7 +13,7 @@ export const addEvent = async (data) =>
       Authorization: `Bearer ${getUserToken()}`,
     },
     body: JSON.stringify(data),
-  }).then<any>((response) => response.json());
+  }).then<EventData>((response) => response.json());
 
 export const findUser = async (name: string) => {
   const path = `${USER_PATH}/?q=${name}`
@@ -32,7 +33,7 @@ export const getEvents = async () => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getUserToken()}`,
     },
-  }).then((response) => response.json());
+  }).then<EventData[]>((response) => response.json());
 
 }
  

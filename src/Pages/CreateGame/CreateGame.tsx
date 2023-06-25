@@ -1,19 +1,19 @@
 import { useFormik } from "formik";
 import { Calendar } from "primereact/calendar";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { toast } from 'react-toastify';
-// import { YMaps, Map, Placemark, SearchControl } from '@pbe/react-yandex-maps';
 
 import Button from "../../Components/common/Button";
 import Input from "../../Components/common/Input";
 import useUserStore from "../../store";
 import languageStore from "../../store/language";
 import themeStore from "../../store/theme";
+
 import { findUser, addEvent, getEvents } from "../../controller/UserControls";
 
 import "./CreateGame.scss";
+import { EventData, UserData } from "../../data/authData";
 
 const schema = yup.object().shape({
   name: yup.string().required(),
@@ -50,7 +50,7 @@ const inputsProps = [
 
 const CreateGame = () => {
   const [createModal, setCreateModal] = useState(false);
-  const navigate = useNavigate();
+  const [listModal, setListModal] = useState(false);
   const userEmail = useUserStore((state) => state.email);
   const theme = themeStore((state) => state.isDark);
   const isEn = languageStore((state) => state.isEn);
@@ -58,13 +58,9 @@ const CreateGame = () => {
     { name: "", price: "", id: Date.now() },
   ]);
   const [team, setTeam] = useState<string[]>([]);
-  const [findUsers, setFindUsers] = useState<any[]>([]);
-
-  // const defaultState = {
-  //   center: [49.80776, 73.088504],
-  //   zoom: 10,
-  //   controls: [],
-  // };
+  const [findUsers, setFindUsers] = useState<UserData[]>([]);
+  const [yourGames, setYourGames] = useState<EventData[]>([]);
+  const [unpayGames, setUnpayGames] = useState<EventData[]>([]);
 
   const { values, handleChange, handleBlur, handleSubmit, errors, touched, resetForm } =
     useFormik({
@@ -139,11 +135,9 @@ const CreateGame = () => {
           return {name:item.name, price:parseFloat(item.price)}
         }),
       };
-      console.log(payload)
       const response = await addEvent(payload)
-      if(!response?.statusCode){
-        setCreateModal(false)
-      }
+      setCreateModal(false)
+      
     const event = await getEvents()
      if(event.length>0){
      if(event.filter((game)=>game.team[0].email !== userEmail)){
@@ -154,10 +148,16 @@ const CreateGame = () => {
      }
     
   }
-      console.log(response);
-      console.log(event)
     }
   };
+
+  const getListOfGames = async () => {
+    setListModal((prev) => (prev = !prev))
+    const event = await getEvents()
+    console.log(event)
+    setYourGames(event.filter((game)=>game.team[0].email === userEmail))
+    setUnpayGames(event.filter((game)=>game.team[0].email !== userEmail))
+  }
 
   const addToTeam = (email:string) => {
     
@@ -178,23 +178,17 @@ const CreateGame = () => {
 
   return (
     <div className={theme ? "create-game dark-theme" : "create-game"}>
-      {/* <YMaps  
-        query={{
-          apikey: "03fa8825-f7ae-44fd-a14b-9b6c576ab101",
-        }}>
-      <Map defaultState={defaultState}>
-      <SearchControl options={{
-      float: 'right',
-      provider: 'yandex#map'
-    }} />
-        <Placemark geometry={[49.807760, 73.088504]} />
-      </Map>
-    </YMaps> */}
       <Button
         className="create-game__button"
         onClick={() => setCreateModal((prev) => (prev = !prev))}
       >
         {isEn ? "Создать игру" : "Create game"}
+      </Button>
+      <Button
+        className="create-game__button"
+        onClick={() => getListOfGames()}
+      >
+        {isEn ? "Список игр" : "Games list"}
       </Button>
       {createModal && (
         <div className="create-game__cont">
@@ -293,6 +287,44 @@ const CreateGame = () => {
           </div>
         </div>
       )}
+      {listModal && <div className="games">
+      <div className="games__item">
+        <p className="games__item-small">{isEn? "Название :" : "Name :"}</p>
+        <p className="games__item-small">{isEn? "Адрес :" : "Adress :"}</p>
+        <p className="games__item-small">{isEn? "Время :" : "Date :"}</p>
+        <p className="games__item-small">{isEn? "К оплате :" : "Price :"}</p>
+        <p className="games__item-small">{isEn? "Расход :" : "Expenditure :"}</p>
+        <p className="games__item-small">{isEn? "Команда :" : "Team :"}</p>
+      </div>
+        {yourGames.map((game)=>(
+  <div className="games__item">
+<p className="games__item-small">{game.place}</p>
+<p className="games__item-small">{game.address}</p>
+<p className="games__item-small">{game.date}</p>
+<p className="games__item-small">{ game.priceForPersone ? Math.round(game.priceForPersone) : ''}</p>
+<div  className="games__item_cont">
+{game.expenditure.map((exp)=>(
+  <div className="games__item_exp">
+  <p className="games__item_exp-text">{exp.name}</p>
+  <p className="games__item_exp-text">{exp.price}</p>
+  </div>
+))}
+</div>
+
+<div className="games__item_cont">
+{game.team.map((exp)=>(
+  <div  className="games__item_exp">
+    <p className="games__item_exp-text">{isEn? "Игрок :" : "Player :"}{exp.firstName}</p>
+    <p className="games__item_exp-text">{isEn? "Оплачено :" : "Confirmed :"}{exp.confirmed ? isEn ? 'Да': 'Yes' : isEn ? 'Нет' : 'No'}</p>
+  </div>
+))}
+</div>
+
+
+  </div>
+        ))}
+      
+        </div>}
       {createModal && (
         <Button
           className="authentication__button"
