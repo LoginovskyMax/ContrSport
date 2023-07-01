@@ -9,6 +9,12 @@
   ],
   "plugins": ["react-hooks"],
   "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ],
     "@typescript-eslint/triple-slash-reference": 0,
     "no-return-assign": "off",
     "no-param-reassign":"off",
